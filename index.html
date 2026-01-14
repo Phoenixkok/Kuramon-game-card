@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>·¥­P©â¥d - ¨IÃ­¿ï¾Üª©</title>
+    <title>æ¥µè‡´æŠ½å¡ - æ²‰ç©©é¸æ“‡ç‰ˆ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -49,7 +49,7 @@
             transition: background 1s ease;
         }
 
-        /* ­I´º¸Ë¹¢¼h */
+        /* èƒŒæ™¯è£é£¾å±¤ */
         .bg-layer {
             position: absolute;
             inset: 0;
@@ -61,7 +61,7 @@
             z-index: 2;
         }
 
-        /* ¸g¨å±m­i¯S®Ä¡G«O«ù³Ì°ªÂAÆv«× */
+        /* ç¶“å…¸å½©è™¹ç‰¹æ•ˆï¼šä¿æŒæœ€é«˜é®®è±”åº¦ */
         #rare-glow {
             position: absolute;
             inset: -100% -50%;
@@ -193,7 +193,7 @@
             border: 1.5px solid rgba(255,255,255,0.1);
         }
 
-        /* ½Õ¾ã¡G±N¿ï¤¤®Éªº«G«×½Õ§C (±q 1.2 -> 1.05)¡Aµo¥ú½d³ò½Õ¤p¥B·t¤@ÂI */
+        /* èª¿æ•´ï¼šå°‡é¸ä¸­æ™‚çš„äº®åº¦èª¿ä½ (å¾ 1.2 -> 1.05)ï¼Œç™¼å…‰ç¯„åœèª¿å°ä¸”æš—ä¸€é» */
         .carousel-card.active-focus {
             filter: brightness(1.05) contrast(1.05);
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
@@ -312,7 +312,7 @@
         <div class="bg-layer" id="glow-core"></div>
         <div class="bg-layer" id="bg-overlay"></div>
         <canvas id="particles"></canvas>
-        <div id="header-ui"><div id="instruction">¥ª¥k·Æ°Ê ¿ï¾Ü¥dµP</div></div>
+        <div id="header-ui"><div id="instruction">å·¦å³æ»‘å‹• é¸æ“‡å¡ç‰Œ</div></div>
         <div id="game-stage">
             <div id="carousel-container"><div id="carousel"></div></div>
             <div id="focus-card-area">
@@ -322,7 +322,7 @@
                 </div>
             </div>
         </div>
-        <div id="footer-ui"><button class="btn-restart" id="btn-restart">¦A©â¤@¦¸</button></div>
+        <div id="footer-ui"><button class="btn-restart" id="btn-restart">å†æŠ½ä¸€æ¬¡</button></div>
     </div>
 
     <script>
@@ -343,7 +343,7 @@
         const carouselContainer = document.getElementById('carousel-container');
         const focusArea = document.getElementById('focus-card-area');
         const mainCard = document.getElementById('main-card');
-        const mainFront = document.getElementById('main-front');
+        const mainCardFront = document.getElementById('main-front');
         const restartBtn = document.getElementById('btn-restart');
         const gameStage = document.getElementById('game-stage');
         const instruction = document.getElementById('instruction');
@@ -483,7 +483,7 @@
             currentResultIsRare = RARE_IDS.includes(resultId);
 
             document.getElementById('main-back').style.backgroundImage = `url('${getUrl(BACK_IMG)}')`;
-            mainFront.style.backgroundImage = `url('${getUrl(resultId)}')`;
+            mainCardFront.style.backgroundImage = `url('${getUrl(resultId)}')`;
             
             setTimeout(() => {
                 carouselContainer.style.display = 'none';
