@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>極致抽卡 - 沉穩選擇版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --card-w: 32vw;
+            --card-h: calc(var(--card-w) * 1.4);
+            --focus-w: 75vw;
+            --focus-h: calc(var(--focus-w) * 1.4);
+        }
+
+        @media (min-width: 600px) {
+            :root {
+                --card-w: 160px;
+                --focus-w: 320px;
+            }
+        }
+
+        body {
+            background: #000;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://lh3.googleusercontent.com/d/14VGdRWqFGALZmzOk516XBQHa-ITqmq0z');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background 1s ease;
+        }
+
+        /* 背景裝飾層 */
+        .bg-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        #bg-overlay {
+            background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%);
+            z-index: 2;
+        }
+
+        /* 經典彩虹特效：保持最高鮮豔度 */
+        #rare-glow {
+            position: absolute;
+            inset: -100% -50%;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.8s ease-in;
+            background: linear-gradient(
+                45deg,
+                #ff0000 0%, 
+                #ff8000 15%, 
+                #ffff00 30%, 
+                #00ff00 45%, 
+                #00ffff 60%, 
+                #0000ff 75%, 
+                #8b00ff 90%,
+                #ff0000 100%
+            );
+            background-size: 200% 200%;
+            filter: blur(60px) saturate(4) brightness(2.8);
+            mix-blend-mode: screen;
+        }
+
+        #app.rare-active #rare-glow {
+            opacity: 0.9;
+            animation: rainbow-flow 4s linear infinite;
+        }
+
+        @keyframes rainbow-flow {
+            0% { background-position: 0% 0%; transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(5deg) scale(1.1); }
+            100% { background-position: 200% 200%; transform: rotate(0deg) scale(1); }
+        }
+
+        #glow-core {
+            background: radial-gradient(circle at center, #ffffff 0%, rgba(255, 255, 255, 0) 75%);
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            mix-blend-mode: overlay;
+        }
+
+        #app.rare-active #glow-core {
+            opacity: 0.7;
+            animation: pulse-zoom 2s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-zoom {
+            0% { transform: scale(0.8); opacity: 0.3; }
+            100% { transform: scale(1.4); opacity: 0.8; }
+        }
+
+        #particles {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        #header-ui {
+            height: 15%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none;
+            padding-bottom: 20px;
+        }
+
+        #instruction {
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-align: center;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(255,255,255,0.3), 0 2px 10px rgba(0,0,0,0.9);
+            transition: opacity 0.5s;
+            color: #fff;
+        }
+
+        #game-stage {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            perspective: 1500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #footer-ui {
+            height: 20%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+            z-index: 100;
+        }
+
+        #carousel-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+        }
+
+        #carousel {
+            position: relative;
+            width: var(--card-w);
+            height: var(--card-h);
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out;
+        }
+
+        .carousel-card {
+            position: absolute;
+            width: var(--card-w);
+            height: var(--card-h);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            background-size: cover;
+            background-position: center;
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1.5px solid rgba(255,255,255,0.1);
+        }
+
+        /* 調整：將選中時的亮度調低 (從 1.2 -> 1.05)，發光範圍調小且暗一點 */
+        .carousel-card.active-focus {
+            filter: brightness(1.05) contrast(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            border: 1.5px solid rgba(255,255,255,0.4);
+            transform: scale(1.05);
+        }
+
+        .carousel-card.inactive { 
+            filter: brightness(0.2) contrast(0.8) grayscale(0.7); 
+            opacity: 0.45;
+            transform: scale(0.9);
+        }
+
+        #focus-card-area {
+            position: absolute;
+            display: none;
+            width: var(--focus-w);
+            height: var(--focus-h);
+            transform-style: preserve-3d;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .card-entity {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 1.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s;
+            transform: scale(0.5) translateY(100px) rotateY(0deg);
+            opacity: 0;
+        }
+
+        .card-entity.show { transform: scale(1) translateY(0) rotateY(0deg); opacity: 1; }
+        .card-entity.flipped { transform: scale(1.02) translateY(0) rotateY(900deg) !important; }
+
+        .card-face {
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            transition: box-shadow 1s ease, border-color 1s ease;
+        }
+
+        .face-back { 
+            transform: rotateY(0deg) translateZ(2px); 
+            border: 5px solid #fff; 
+            background-color: #222;
+        }
+
+        .face-front { 
+            transform: rotateY(180deg) translateZ(2px); 
+            border: 1px solid rgba(255,255,255,0.4); 
+            background-color: #111;
+            overflow: hidden;
+        }
+
+        .card-entity.flipped .card-face {
+            box-shadow: 
+                0 0 40px rgba(255, 255, 255, 1), 
+                0 0 100px rgba(255, 255, 255, 0.6);
+            border-color: rgba(255, 255, 255, 1);
+        }
+
+        .shine {
+            position: absolute; 
+            inset: -50%;
+            background: linear-gradient(
+                135deg, 
+                transparent 30%, 
+                rgba(255,255,255,0.7) 45%, 
+                rgba(255,255,255,1) 50%, 
+                rgba(255,255,255,0.7) 55%, 
+                transparent 70%
+            );
+            background-size: 200% 200%;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .flipped .shine { 
+            opacity: 1;
+            animation: shine-sweep 1.8s infinite linear; 
+        }
+
+        @keyframes shine-sweep {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .btn-restart {
+            display: none;
+            background: rgba(255, 255, 255, 0.98);
+            color: #000;
+            padding: 12px 36px;
+            border-radius: 40px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.4);
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        .btn-restart:active { transform: scale(0.94); }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <div class="bg-layer" id="rare-glow"></div>
+        <div class="bg-layer" id="glow-core"></div>
+        <div class="bg-layer" id="bg-overlay"></div>
+        <canvas id="particles"></canvas>
+        <div id="header-ui"><div id="instruction">左右滑動 選擇卡牌</div></div>
+        <div id="game-stage">
+            <div id="carousel-container"><div id="carousel"></div></div>
+            <div id="focus-card-area">
+                <div class="card-entity" id="main-card">
+                    <div class="card-face face-back" id="main-back"></div>
+                    <div class="card-face face-front" id="main-front"><div class="shine"></div></div>
+                </div>
+            </div>
+        </div>
+        <div id="footer-ui"><button class="btn-restart" id="btn-restart">再抽一次</button></div>
+    </div>
+
+    <script>
+        const getUrl = (id) => `https://lh3.googleusercontent.com/d/${id}`;
+        const BACK_IMG = "1tRpfQtfkbRwD8vfEXzWUWn4zzXB3hKyN";
+        
+        const RARE_IDS = ["150yiNj1NcJix85eTr8jpOK2kto5fiaLj", "1DoNxZXG61l7AtkpwlXTnjqCBZA64A2gE"];
+        const POOL = [
+            "1g-g-3dSg5YeqRJ9Jn5KtZyfJ0x3-Q05g", "1oHR2RgngN4pkjBLJXSkt65dO6KkR5qWz",
+            "1W2PwLF7txXFjoasHP5Sg1_CrSB9kPI-a", "18plY3v4olIjyS1cqnHpIejy-bGN0GH5c",
+            "1PepC_UUt_mchQuwnuqNa1uWwKPvseSZD", "1x4Rw9yihiex7r5_odPmBFW4PveM1C-al",
+            "1GqGBoeO94J9ebrnVKlGNtOOaClA8mrwt", 
+            ...RARE_IDS
+        ];
+
+        const app = document.getElementById('app');
+        const carousel = document.getElementById('carousel');
+        const carouselContainer = document.getElementById('carousel-container');
+        const focusArea = document.getElementById('focus-card-area');
+        const mainCard = document.getElementById('main-card');
+        const mainFront = document.getElementById('main-front');
+        const restartBtn = document.getElementById('btn-restart');
+        const gameStage = document.getElementById('game-stage');
+        const instruction = document.getElementById('instruction');
+
+        let gameState = 'ROTATING'; 
+        let currentRotation = 0;
+        let isDragging = false;
+        let startX = 0;
+        let lastX = 0;
+        let velocity = 0;
+        let touchStartTime = 0;
+        let radius = 0; 
+        let momentumID = null;
+        let currentResultIsRare = false;
+        const cardCount = 10;
+
+        function calculateRadius() {
+            radius = Math.min(window.innerWidth * 0.58, 230); 
+        }
+
+        function initCarousel() {
+            calculateRadius();
+            carousel.innerHTML = '';
+            for (let i = 0; i < cardCount; i++) {
+                const el = document.createElement('div');
+                el.className = 'carousel-card';
+                el.style.backgroundImage = `url('${getUrl(BACK_IMG)}')`;
+                const angle = (i / cardCount) * 360;
+                el.dataset.angle = angle;
+                el.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+                carousel.appendChild(el);
+            }
+            updateCarouselVisuals();
+        }
+
+        function updateCarouselVisuals() {
+            const normalizedRotation = ((-currentRotation % 360) + 360) % 360;
+            document.querySelectorAll('.carousel-card').forEach(card => {
+                const angle = parseFloat(card.dataset.angle);
+                let diff = Math.abs(normalizedRotation - angle);
+                if (diff > 180) diff = 360 - diff;
+                
+                if (diff < 18) { 
+                    card.classList.remove('inactive');
+                    card.classList.add('active-focus');
+                    card.style.zIndex = 10;
+                } else {
+                    card.classList.add('inactive');
+                    card.classList.remove('active-focus');
+                    card.style.zIndex = 1;
+                }
+            });
+        }
+
+        function applyMomentum() {
+            if (Math.abs(velocity) < 0.1) {
+                cancelAnimationFrame(momentumID);
+                const step = 360 / cardCount;
+                const closestIndex = Math.round((-currentRotation) / step);
+                currentRotation = -(closestIndex * step);
+                carousel.style.transition = 'transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                carousel.style.transform = `rotateY(${currentRotation}deg)`;
+                updateCarouselVisuals();
+                return;
+            }
+            currentRotation += velocity;
+            velocity *= 0.95; 
+            carousel.style.transform = `rotateY(${currentRotation}deg)`;
+            updateCarouselVisuals();
+            momentumID = requestAnimationFrame(applyMomentum);
+        }
+
+        const onDown = (x, y) => { 
+            if (gameState !== 'ROTATING') return;
+            cancelAnimationFrame(momentumID);
+            startX = x; 
+            lastX = x;
+            isDragging = false; 
+            velocity = 0;
+            touchStartTime = Date.now();
+            carousel.style.transition = 'none';
+        };
+
+        const onMove = (x, y) => {
+            if (gameState !== 'ROTATING') return;
+            const deltaX = x - lastX;
+            if (Math.abs(x - startX) > 5) isDragging = true;
+            velocity = deltaX * 0.6; 
+            currentRotation += velocity;
+            carousel.style.transform = `rotateY(${currentRotation}deg)`;
+            updateCarouselVisuals();
+            lastX = x;
+        };
+
+        const onUp = (e, x, y) => {
+            if (gameState === 'ROTATING') {
+                const touchDuration = Date.now() - touchStartTime;
+                if (!isDragging && touchDuration < 300) {
+                    selectCard();
+                } else {
+                    momentumID = requestAnimationFrame(applyMomentum);
+                }
+            } else if (gameState === 'FOCUSING') {
+                flipCard();
+            }
+            isDragging = false;
+        };
+
+        gameStage.addEventListener('mousedown', (e) => onDown(e.clientX, e.clientY));
+        window.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY));
+        window.addEventListener('mouseup', (e) => onUp(e, e.clientX, e.clientY));
+        
+        gameStage.addEventListener('touchstart', (e) => onDown(e.touches[0].clientX, e.touches[0].clientY), {passive: true});
+        window.addEventListener('touchmove', (e) => onMove(e.touches[0].clientX, e.touches[0].clientY), {passive: true});
+        window.addEventListener('touchend', (e) => {
+            const t = e.changedTouches[0];
+            onUp(e, t.clientX, t.clientY);
+        });
+
+        restartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetGame();
+        });
+
+        function selectCard() {
+            cancelAnimationFrame(momentumID);
+            const step = 360 / cardCount;
+            const closestIndex = Math.round((-currentRotation) / step);
+            currentRotation = -(closestIndex * step);
+            carousel.style.transform = `rotateY(${currentRotation}deg)`;
+            updateCarouselVisuals();
+
+            gameState = 'TRANSITIONING';
+            instruction.style.opacity = '0';
+            
+            const resultId = POOL[Math.floor(Math.random() * POOL.length)];
+            currentResultIsRare = RARE_IDS.includes(resultId);
+
+            document.getElementById('main-back').style.backgroundImage = `url('${getUrl(BACK_IMG)}')`;
+            mainFront.style.backgroundImage = `url('${getUrl(resultId)}')`;
+            
+            setTimeout(() => {
+                carouselContainer.style.display = 'none';
+                focusArea.style.display = 'block';
+                void mainCard.offsetWidth; 
+                mainCard.classList.remove('flipped');
+                mainCard.classList.add('show');
+                setTimeout(() => { gameState = 'FOCUSING'; }, 900);
+            }, 300);
+        }
+
+        function flipCard() {
+            if (gameState !== 'FOCUSING') return;
+            mainCard.classList.add('flipped');
+            gameState = 'FLIPPED';
+
+            if (currentResultIsRare) {
+                setTimeout(() => {
+                    app.classList.add('rare-active');
+                }, 50); 
+            }
+
+            setTimeout(() => { restartBtn.style.display = 'block'; }, 1500);
+        }
+
+        function resetGame() {
+            gameState = 'ROTATING';
+            app.classList.remove('rare-active');
+            restartBtn.style.display = 'none';
+            focusArea.style.display = 'none';
+            mainCard.classList.remove('show', 'flipped');
+            carouselContainer.style.display = 'flex';
+            instruction.style.opacity = '1';
+            currentRotation = 0;
+            carousel.style.transition = 'none'; 
+            carousel.style.transform = `rotateY(0deg)`;
+            updateCarouselVisuals();
+            setTimeout(() => {
+                carousel.style.transition = 'transform 0.3s ease-out';
+            }, 50);
+        }
+
+        const cvs = document.getElementById('particles');
+        const ctx = cvs.getContext('2d');
+        let pts = [];
+        const res = () => { 
+            cvs.width = window.innerWidth; 
+            cvs.height = window.innerHeight; 
+            calculateRadius();
+            document.querySelectorAll('.carousel-card').forEach((card, i) => {
+                const angle = (i / cardCount) * 360;
+                card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+            });
+            updateCarouselVisuals();
+        };
+        window.addEventListener('resize', res);
+        res();
+
+        for(let i=0; i<60; i++) pts.push({
+            x: Math.random() * cvs.width, 
+            y: Math.random() * cvs.height, 
+            s: Math.random() * 2.5 + 0.5, 
+            v: Math.random() * 0.3 + 0.1,
+            a: Math.random() * 0.4 + 0.1
+        });
+
+        function draw() {
+            ctx.clearRect(0,0,cvs.width,cvs.height);
+            pts.forEach(p => {
+                p.y -= p.v; 
+                if(p.y < 0) p.y = cvs.height;
+                const alpha = app.classList.contains('rare-active') ? p.a * 3 : p.a;
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.beginPath(); 
+                ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); 
+                ctx.fill();
+            });
+            requestAnimationFrame(draw);
+        }
+        
+        window.onload = () => { 
+            initCarousel(); 
+            draw(); 
+        };
+    </script>
+</body>
+</html>
