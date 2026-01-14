@@ -25,7 +25,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: "PingFang TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: white;
             height: 100vh;
             display: flex;
@@ -61,7 +61,7 @@
             z-index: 2;
         }
 
-        /* 經典彩虹特效：保持最高鮮豔度 */
+        /* 經典彩虹特效 */
         #rare-glow {
             position: absolute;
             inset: -100% -50%;
@@ -107,11 +107,6 @@
         #app.rare-active #glow-core {
             opacity: 0.7;
             animation: pulse-zoom 2s infinite alternate ease-in-out;
-        }
-
-        @keyframes pulse-zoom {
-            0% { transform: scale(0.8); opacity: 0.3; }
-            100% { transform: scale(1.4); opacity: 0.8; }
         }
 
         #particles {
@@ -193,7 +188,6 @@
             border: 1.5px solid rgba(255,255,255,0.1);
         }
 
-        /* 調整：將選中時的亮度調低 (從 1.2 -> 1.05)，發光範圍調小且暗一點 */
         .carousel-card.active-focus {
             filter: brightness(1.05) contrast(1.05);
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
